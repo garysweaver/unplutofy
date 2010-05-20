@@ -19,7 +19,7 @@ Install [Git][git].
 
 ### Clone the Project's Git Repository
 
-Got to your favorite directory and clone the repo:
+Change directory to your favorite directory and clone the repo:
 
     git clone http://github.com/garysweaver/unplutofy.git
 

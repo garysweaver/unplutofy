@@ -4,7 +4,7 @@ Unplutofy
 Given a war file, unplutofy does the following:
 
 1. Removes all servlet elements that contain either "portlet-class" or "portlet-name" anywhere between the servlet start and end tags.
-1. Removes all servlet-mapping elements that contain "PlutoInvoker" anywhere between the servlet-mapping start and end tags.
+2. Removes all servlet-mapping elements that contain "PlutoInvoker" anywhere between the servlet-mapping start and end tags.
 3. Removes all portlet*.tld files from the war.
 
 ### Features
@@ -46,8 +46,6 @@ Back up the war file before attempting to use this. For example:
 
     cp (input_war) (input_war.bak)
     
-Read the code and understand what it does before executing it. Use at your own risk.
-
 Usage:
 
     unplutofy (input_war) (output_war)
@@ -100,6 +98,10 @@ If you get:
     Caused by: java.lang.ClassNotFoundException: unplutofy.commandline.UnplutofyCommand
 
 It is because you didn't build it yet or it can't find the jar because of the name or you aren't in the bin directory. See build instructions above.
+
+### Warning
+
+Read the code and understand what it does before executing it. Use these tools at your own risk.
 
 ### License
 

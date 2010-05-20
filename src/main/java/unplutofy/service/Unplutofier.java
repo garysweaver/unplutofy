@@ -44,9 +44,19 @@ public class Unplutofier {
         ZipUtil.unzip(new File(req.getInputFile()), unwarDir);
         
         // unplutofy
+        
         String webXmlPathname = unwarDir.getCanonicalPath() + File.separator + "WEB-INF" + File.separator + "web.xml";
-        String webXml = FileUtil.readFileAsString(webXmlPathname);        
-        webXml = unplutofyWebxml(webXml);
+        System.err.println("Reading " + webXmlPathname);
+        String webXml = FileUtil.readFileAsString(webXmlPathname);
+        String portletXmlPathname = unwarDir.getCanonicalPath() + File.separator + "WEB-INF" + File.separator + "portlet.xml";
+        System.err.println("Reading " + portletXmlPathname);
+        String portletXml = FileUtil.readFileAsString(portletXmlPathname);
+        System.err.println("Parsing portlet-name");
+        String portletName = XmlUtil.readElementValue("portlet-name", portletXml).trim();
+        System.err.println("Parsed portlet-name '" + portletName + "'");
+        System.err.println("Editing web.xml");
+        webXml = unplutofyWebxml(webXml, portletName);
+        System.err.println("Saving web.xml");
         FileUtil.writeStringToFile(webXml, webXmlPathname);
         
         // rezip war file up to output warpathname
@@ -60,13 +70,14 @@ public class Unplutofier {
         System.err.println("Deleted temporary dir '" + unwarDir.getCanonicalPath() + "'");
     }
     
-    public String unplutofyWebxml(String originalWebXml) {
+    public String unplutofyWebxml(String originalWebXml, String portletName) {
         String result = originalWebXml;
         // pluto 1.0-RC2
         result = XmlUtil.removeElementsContainingString(result, "<servlet>", "</servlet>", "portlet-class");
+        result = XmlUtil.removeElementsContainingString(result, "<servlet-mapping>", "</servlet-mapping>", "<servlet-name>" + portletName + "</servlet-name>");
         // pluto 1.1.7
         result = XmlUtil.removeElementsContainingString(result, "<servlet>", "</servlet>", "<param-name>portlet-name");
-        result = XmlUtil.removeElementsContainingString(result, "<servlet-mapping>", "</servlet-mapping>", "PlutoInvoker");
+        result = XmlUtil.removeElementsContainingString(result, "<servlet-mapping>", "</servlet-mapping>", "PlutoInvoker");        
         
         return result;
     }

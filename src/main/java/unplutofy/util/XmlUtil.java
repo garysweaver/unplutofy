@@ -31,6 +31,22 @@ import java.util.List;
  */
 public class XmlUtil {
     
+    public static String readElementValue(String elementName, String s) throws IOException {
+        int indexOfElementStart = s.indexOf("<" + elementName);
+        if (indexOfElementStart == -1) {
+            throw new IOException("Couldn't find element '" + elementName + "'!");
+        }
+        int indexOfValueStart = s.indexOf(">", indexOfElementStart) + 1;
+        if (indexOfElementStart == -1) {
+            throw new IOException("Couldn't find element '" + elementName + "'! (couldn't find end of start tag)");
+        }
+        int indexOfValueEnd = s.indexOf("<", indexOfValueStart);
+        if (indexOfElementStart == -1) {
+            throw new IOException("Couldn't find element '" + elementName + "'! (couldn't find end tag)");
+        }
+        return s.substring(indexOfValueStart, indexOfValueEnd);
+    }
+    
     public static String removeElementsContainingString(String stringToParse, String startElement, String endElement, String containedString) {
         String result = stringToParse;
         

@@ -3,14 +3,8 @@ Unplutofy
 
 Given a war file, unplutofy:
 
-1. Removes all "servlet" elements that contain either of the following:
-* "portlet-class"
-* "param-name" element with value "portlet-name"
-
-2. Removes all "servlet-mapping" elements that contain either of the following:
-* "PlutoInvoker"
-* "servlet-name" element with value of the "portlet-name" element as defined in portlet.xml
-
+1. Removes all "servlet" elements that contain either "portlet-class" or a "param-name" element with value "portlet-name".
+2. Removes all "servlet-mapping" elements that contain either "PlutoInvoker" or a "servlet-name" element with value of the "portlet-name" element as defined in portlet.xml
 3. Removes all portlet*.tld files from the war.
 
 ### Features

@@ -14,8 +14,7 @@ public class UnplutofierTest extends TestCase
         assertNotNull("unplutofyWebxml(String) should not return null", result);
         assertTrue("unplutofyWebxml(String) should not return string containing 'portlet-class'", result.indexOf("portlet-class")==-1);
         assertTrue("unplutofyWebxml(String) should not return string containing servlet-name element with value: someportlet", result.indexOf("<servlet-name>someportlet</servlet-name>")==-1);
-        // pluto 1.1 thing
-        //assertTrue("unplutofyWebxml(String) should not return string containing 'PlutoInvoker'", result.indexOf("PlutoInvoker")==-1);
+        assertTrue("unplutofyWebxml(String) should not return string containing '/WEB-INF/tld/portlet.tld'", result.indexOf("/WEB-INF/tld/portlet.tld")==-1);
         FileUtil.writeStringToFile(result, "./temp.web.xml.example-pluto-1.0-RC2.converted");
     }
     

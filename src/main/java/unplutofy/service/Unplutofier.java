@@ -75,9 +75,10 @@ public class Unplutofier {
         // pluto 1.0-RC2
         result = XmlUtil.removeElementsContainingString(result, "<servlet>", "</servlet>", "portlet-class");
         result = XmlUtil.removeElementsContainingString(result, "<servlet-mapping>", "</servlet-mapping>", "<servlet-name>" + portletName + "</servlet-name>");
+        result = XmlUtil.removeElementsContainingString(result, "<taglib>", "</taglib>", "/portlet.tld");
         // pluto 1.1.7
         result = XmlUtil.removeElementsContainingString(result, "<servlet>", "</servlet>", "<param-name>portlet-name");
-        result = XmlUtil.removeElementsContainingString(result, "<servlet-mapping>", "</servlet-mapping>", "PlutoInvoker");        
+        result = XmlUtil.removeElementsContainingString(result, "<servlet-mapping>", "</servlet-mapping>", "PlutoInvoker");
         
         return result;
     }

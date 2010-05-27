@@ -24,7 +24,7 @@ package unplutofy.util;
 
 import java.io.*;
 import java.util.*;
-import java.util.zip.*;
+import java.util.jar.*;
 
 import java.util.ArrayList;
 import java.util.List;

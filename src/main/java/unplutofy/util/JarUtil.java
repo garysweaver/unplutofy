@@ -24,21 +24,23 @@ package unplutofy.util;
 
 import java.io.*;
 import java.util.*;
-import java.util.zip.*;
+import java.util.jar.*;
 
-// unzip methods heavily based on http://piotrga.wordpress.com/2008/05/07/how-to-unzip-archive-in-java/
-public class ZipUtil {
+// unjar methods heavily based on http://piotrga.wordpress.com/2008/05/07/how-to-unzip-archive-in-java/
+public class JarUtil {
 
-    public static void unzip(File archive, File outputDir) throws IOException {
+    public static Manifest unjar(File archive, File outputDir) throws IOException {
 
-        ZipFile zipfile = new ZipFile(archive);
-        for (Enumeration e = zipfile.entries(); e.hasMoreElements(); ) {
-            ZipEntry entry = (ZipEntry) e.nextElement();
-            unzipEntry(zipfile, entry, outputDir);
-        }        
+        JarFile jarfile = new JarFile(archive);
+        Manifest manifest = jarfile.getManifest();
+        for (Enumeration e = jarfile.entries(); e.hasMoreElements(); ) {
+            JarEntry entry = (JarEntry) e.nextElement();
+            unjarEntry(jarfile, entry, outputDir);
+        }
+        return manifest;
     }
 
-    private static void unzipEntry(ZipFile zipfile, ZipEntry entry, File outputDir) throws IOException {
+    private static void unjarEntry(JarFile jarfile, JarEntry entry, File outputDir) throws IOException {
 
         if (entry.isDirectory()) {
             File dir = new File(outputDir, entry.getName());
@@ -53,27 +55,24 @@ public class ZipUtil {
             createDirectoryAndParentDirectories(outputFile.getParentFile());
         }
 
-        BufferedInputStream in = new BufferedInputStream(zipfile.getInputStream(entry));
+        BufferedInputStream in = new BufferedInputStream(jarfile.getInputStream(entry));
         BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile));
 
         try {
             IOUtil.copy(in, out);
         } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                }
-                catch (Throwable t) {
-                    t.printStackTrace();
-                }
+            try {
+                out.close();
             }
-            if (in != null) {
-                try {
-                    in.close();
-                }
-                catch (Throwable t) {
-                    t.printStackTrace();
-                }
+            catch (Throwable t) {
+                t.printStackTrace();
+            }
+
+            try {
+                in.close();
+            }
+            catch (Throwable t) {
+                t.printStackTrace();
             }
         }
     }
@@ -82,60 +81,61 @@ public class ZipUtil {
         if(!dir.mkdirs()) throw new IOException("Can not create directory '" + dir.getCanonicalPath() + "'");
     }
 
-    public static void zip(File inputDir, File zipFilePathname, String[] excludeFilenamePatterns) throws IOException {
-        ZipOutputStream zos = null;
+    public static void jar(File inputDir, File jarFilePathname, Manifest manifest, String[] excludeFilenamePatterns) throws IOException {
+        JarOutputStream out = null;
         try {
-            zos = new ZipOutputStream(new FileOutputStream(zipFilePathname)); 
-            zipDirectory(inputDir, zos, inputDir.getCanonicalPath(), excludeFilenamePatterns);
+            out = new JarOutputStream(new FileOutputStream(jarFilePathname), manifest);
+            jarDirectory(inputDir, out, inputDir.getCanonicalPath(), excludeFilenamePatterns);
         }
         finally {
-            if (zos != null) {
-                zos.close();
+            if (out != null) {
+                out.close();
             }
         }
-        System.err.println("Archive created '" + zipFilePathname.getCanonicalPath() + "'");
+        System.err.println("Archive created '" + jarFilePathname.getCanonicalPath() + "'");
     }
 
-    public static void zipDirectory(File zipDir, ZipOutputStream zos, String rootDir, String[] excludeFilenamePatterns) throws IOException
+    private static void jarDirectory(File jarDir, JarOutputStream out, String rootDir, String[] excludeFilenamePatterns) throws IOException
     {         
-        System.err.println("Zipping directory '" + zipDir.getCanonicalPath() + "'");
-        String[] dirList = zipDir.list();         
+        System.err.println("Compressing directory '" + jarDir.getCanonicalPath() + "'");
+        String[] dirList = jarDir.list();
 
         for(int i=0; i<dirList.length; i++) { 
-            File f = new File(zipDir, dirList[i]); 
+            File f = new File(jarDir, dirList[i]);
             if(f.isDirectory()) { 
-                zipDirectory(f, zos, rootDir, excludeFilenamePatterns);
+                jarDirectory(f, out, rootDir, excludeFilenamePatterns);
             }
             else {
-                FileInputStream in = new FileInputStream(f);
-                String path = "." + f.getCanonicalPath().replace(rootDir, "");
-                
                 boolean exclude = false;
                 for (int j=0; !exclude && j<excludeFilenamePatterns.length; j++) {
                     if (f.getName().matches(excludeFilenamePatterns[j])) {
                         exclude = true;
                     }
                 }
+
+                // convert /(tmpdirpath)/(relativepath) to /(relativepath) or
+                //         \tmpdirpath\(relativepath) to \(relativepath)
+                // and remove preceding / or \ (shouldn't assume it is File.separator)
+                String path = f.getCanonicalPath().replace(rootDir, "").substring(1);
                 
                 if (exclude) {
-                    System.err.println("Not including file '" + path + "'"); 
+                    System.err.println("Not including file '" + path + "'");
                 }
                 else {
-                    System.err.println("Zipping file '" + path + "'"); 
-                    ZipEntry entry = new ZipEntry(path); 
-                    zos.putNextEntry(entry); 
-                
+                    System.err.println("Compressing file '" + path + "'");
+                    JarEntry entry = new JarEntry(path);
+                    out.putNextEntry(entry);
+
+                    FileInputStream in = new FileInputStream(f);
                     try {
-                        IOUtil.copy(in, zos);
+                        IOUtil.copy(in, out);
                     } finally {
-                        // don't close zos- need to leave open
-                        if (in != null) {
-                            try {
-                                in.close();
-                            }
-                            catch (Throwable t) {
-                                t.printStackTrace();
-                            }
+                        // Note: don't close out - need to leave open
+                        try {
+                            in.close();
+                        }
+                        catch (Throwable t) {
+                            t.printStackTrace();
                         }
                     }
                 }

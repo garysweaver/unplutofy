@@ -25,10 +25,11 @@ package unplutofy.service;
 import unplutofy.service.request.UnplutofyRequest;
 import unplutofy.util.FileUtil;
 import unplutofy.util.XmlUtil;
-import unplutofy.util.ZipUtil;
+import unplutofy.util.JarUtil;
 
 import java.io.IOException;
 import java.io.File;
+import java.util.jar.Manifest;
 
 /**
  * @author Gary S. Weaver
@@ -37,11 +38,12 @@ public class Unplutofier {
 
     public void unplutofy(UnplutofyRequest req) throws IOException {
 
-        // unzip war file into temp dir
+        // unjar war file into temp dir
         File unwarDir = FileUtil.createTempDirectory();
         System.err.println("Created temporary dir '" + unwarDir.getCanonicalPath() + "'");
         System.err.println("Decompressing '" + req.getInputFile() + "'...");
-        ZipUtil.unzip(new File(req.getInputFile()), unwarDir);
+
+        Manifest manifest = JarUtil.unjar(new File(req.getInputFile()), unwarDir);
         
         // unplutofy
         
@@ -59,11 +61,11 @@ public class Unplutofier {
         System.err.println("Saving web.xml");
         FileUtil.writeStringToFile(webXml, webXmlPathname);
         
-        // rezip war file up to output warpathname
+        // rejar war file up to output warpathname
         System.err.println("Compressing '" + req.getOutputFile() + "'...");
         // used http://www.regexplanet.com/simple/index.html to test, but online tester uses \ vs \\ like required in string...
-        String[] excludeFilenamePatterns = {"portlet.*\\.tld"};
-        ZipUtil.zip(unwarDir, new File(req.getOutputFile()), excludeFilenamePatterns);
+        String[] excludeFilenamePatterns = {"MANIFEST.MF", "portlet.*\\.tld"};
+        JarUtil.jar(unwarDir, new File(req.getOutputFile()), manifest, excludeFilenamePatterns);
         
         // clean-up
         unwarDir.delete();
